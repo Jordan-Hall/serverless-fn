@@ -24,9 +24,11 @@ class FNDeploy {
                     local: {
                         usage: 'Deploy locally(no docker push)',
                         shortcut: 'l',
+			type: 'boolean'
                     },
                     'no-cache': {
                         usage: "Don't use docker cache",
+			type: 'boolean'
                     },
                 },
             },
