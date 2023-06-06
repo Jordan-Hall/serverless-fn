@@ -18,7 +18,7 @@ class FNLogs {
                     count: {
                         usage: 'Number of lines to print',
                         shortcut: 'n',
-                        type: 'number'
+                        type: 'string'
                     },
                 },
             },
