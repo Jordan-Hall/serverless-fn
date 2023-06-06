@@ -8,16 +8,30 @@ class DotNetHelper extends LangHelper {
     }
 
     langStrings() {
-        return ['dotnet'];
+        return ['dotnet', 'dotnet6'];
     }
     extensions() {
         return ['.cs', '.fs'];
     }
     buildFromImage() {
-        return 'microsoft/dotnet:1.0.1-sdk-projectjson';
+        return 'mcr.microsoft.com/dotnet/sdk:6.0';
     }
     runFromImage() {
-        return 'microsoft/dotnet:runtime';
+        return 'mcr.microsoft.com/dotnet/runtime:6.0';
+    }
+
+    dockerfileBuildCmds() {
+        const cmds = [];
+        cmds.push('ADD . .');
+
+        return cmds
+    }
+
+    dockerfileCopyCmds() {
+        const cmds = [];
+        cmds.push('COPY --from=build-stage /function/output .');
+
+        return cmds
     }
 
     entrypoint() {
@@ -36,7 +50,7 @@ class DotNetHelper extends LangHelper {
             'run',
             '--rm', '-v',
             `${wd}:/dotnet`, '-w', '/dotnet',
-            'microsoft/dotnet:1.0.1-sdk-projectjson',
+            'mcr.microsoft.com/dotnet/sdk:6.0',
             '/bin/sh', '-c',
             'dotnet restore && dotnet publish -c release -b /tmp -o .',
         ];

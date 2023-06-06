@@ -24,22 +24,20 @@ class FNDeploy {
                     local: {
                         usage: 'Deploy locally(no docker push)',
                         shortcut: 'l',
-			type: 'boolean'
                     },
                     'no-cache': {
                         usage: "Don't use docker cache",
-			type: 'boolean'
                     },
                 },
             },
         };
         this.hooks = {
             'deploy:deploy': () => BB.bind(this)
-            .then(this.prepareFuncs)
-            .mapSeries(this.deployFunc),
+                .then(this.prepareFuncs)
+                .mapSeries(this.deployFunc),
             'deploy:function:deploy': () => BB.bind(this)
-            .then(this.prepareFunc)
-            .then(this.deployFunc),
+                .then(this.prepareFunc)
+                .then(this.deployFunc),
         };
     }
 
@@ -53,9 +51,9 @@ class FNDeploy {
             return BB.reject('No service name defined in serverless yaml.');
         }
         const svc = this.serverless.service.serviceObject;
-            // console.log(appName)
-            // console.log(svc)
-            // bump version // increase number seems easy enough...
+        // console.log(appName)
+        // console.log(svc)
+        // bump version // increase number seems easy enough...
         const cwd = process.cwd();
 
         const funcs = [];
@@ -73,9 +71,9 @@ class FNDeploy {
             return BB.reject('No service name defined in serverless yaml.');
         }
         const svc = this.serverless.service.serviceObject;
-            // console.log(appName)
-            // console.log(svc)
-            // bump version // increase number seems easy enough...
+        // console.log(appName)
+        // console.log(svc)
+        // bump version // increase number seems easy enough...
         const cwd = process.cwd();
 
         let funParam = this.options.function;
@@ -86,7 +84,7 @@ class FNDeploy {
         const func = getFunc(funParam, this.serverless.service.functions);
         func.appName = appName;
 
-        const dir = this.options.f;
+        const dir = this.options.function;
 
         return BB.resolve({ func, dir, cwd, svc });
     }
@@ -113,15 +111,15 @@ class FNDeploy {
         // var dockerUser = this.serverless.service.provider['fn-user'];
 
         const { func,
-             dir,
-             cwd,
-             svc } = funcDir;
+            dir,
+            cwd,
+            svc } = funcDir;
 
-        if (this.options.local) {
+        if (func.local) {
             func.local = true;
         }
 
-        if (this.options.noCache) {
+        if (func.noCache) {
             func.noCache = true;
         }
 
@@ -231,16 +229,18 @@ class FNDeploy {
             this.dockerBuild.bind(this),
             this.postBuild,
         ];
-        return BB.mapSeries(steps, (s) => { s(func); })
+        return BB.mapSeries(steps, (s) => {
+            s(func);
+        })
             .finally(this.cleanup(func.dockerFile));
     }
 
     imageName(func) {
         let fname = func.name;
         if (!fname.includes('/')) {
-		// then we'll prefix FN_REGISTRY
+            // then we'll prefix FN_REGISTRY
             let reg = process.env.FN_REGISTRY;
-            if (reg !== '') {
+            if (reg !== undefined && reg !== '') {
                 if (!reg.endsWith('/')) {
                     reg += '/';
                 }
@@ -261,14 +261,14 @@ class FNDeploy {
         const dockerFile = `${cwd}/tempDockerFile`;
         let dockerFileLines = [];
 
-       // multi-stage build: https://medium.com/travis-on-docker/multi-stage-docker-builds-for-creating-tiny-go-images-e0e1867efe5a
+        // multi-stage build: https://medium.com/travis-on-docker/multi-stage-docker-builds-for-creating-tiny-go-images-e0e1867efe5a
         let bi = func.buildImage;
         if (bi === undefined) {
             bi = helper.buildFromImage();
         }
 
         if (helper.isMultiStage()) {
-        // build stage
+            // build stage
             dockerFileLines.push(`FROM ${bi} as build-stage`);
         } else {
             dockerFileLines.push(`FROM ${bi}`);
@@ -277,7 +277,7 @@ class FNDeploy {
         dockerFileLines = dockerFileLines.concat(helper.dockerfileBuildCmds());
 
         if (helper.isMultiStage()) {
-		// final stage
+            // final stage
             let ri = func.runImage;
             if (ri === undefined) {
                 ri = helper.runFromImage();
@@ -334,8 +334,8 @@ class FNDeploy {
     cleanup(dockerFile) {
         return () => {
             if (dockerFile !== 'Dockerfile'
-            && dockerFile !== undefined
-            && dockerFile !== null) {
+                && dockerFile !== undefined
+                && dockerFile !== null) {
                 fs.unlinkSync(dockerFile);
             }
         };
